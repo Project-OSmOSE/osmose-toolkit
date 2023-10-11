@@ -11,6 +11,7 @@ from OSmOSE.config import *
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from OSmOSE.utils import make_path
 from tqdm import tqdm
 import sys
@@ -62,7 +63,10 @@ class Weather():
             fact_y = 1
             fig, ax = plt.subplots(1, 1, figsize=(fact_x * 1800 / my_dpi, fact_y * 512 / my_dpi),
                                    dpi=my_dpi, constrained_layout=True)    
-            ax.scatter(x_train,y_train)
+            #ax.scatter(x_train,y_train)
+            data = pd.DataFrame(np.column_stack((x_train, y_train)), columns = 'x', 'y')
+            sns.kdeplot(data = data, x = 'x', y = 'y', fill=True, ax = ax)
+
         
             z = np.polyfit(x_train, y_train, 2)
             fit = np.poly1d(z)
