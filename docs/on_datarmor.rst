@@ -77,7 +77,7 @@ You can now create a job to ask for resources (including internet access) usingÂ
 
 	qsub -I -l walltime=1:00:00 -q ftp -S /bin/bash
 
-This job is interactive (parameter -I) and will last for 1 hour (parameter walltime=1:00:00). Default memory resources are limited to 500 MB, you may want more resources to install package in conda environment (as we will see in :ref:`Conda environment creation`) ;  to change this use the `mem` parameter:
+This job is interactive (parameter -I) and will last for 1 hour (parameter walltime=1:00:00). Interactiveness means standard inputs and outputs (stdin, stdout, stderr) are redirected to your current terminal session and, as a result, you can have direct feedbacks of your job execution. Default memory resources are limited to 500 MB, you may want more resources to install package in conda environment (as we will see in :ref:`Conda environment creation`) ;  to change this use the `mem` parameter:
 
 
 .. code:: bash
@@ -88,7 +88,7 @@ See section :ref:`Run python codes in qsub jobs` for other configurations of qsu
 
 
 
-Run python codes in qsub jobs
+Run python codes in interactive qsub jobs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's start launching an interactive qsub job:
@@ -110,11 +110,48 @@ To run your code using a GPU
 .. code:: bash
 
 	qsub -I -q gpuq -l ncpus=10 -l ngpus=1 -l mem=32gb  -l walltime=01:00:00 -S /bin/bash
+	
+	
+	
+Run python codes in batch qsub jobs with a PBS file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Batch jobs enable to launch a script in background, unlike the interactive mode.
+To ease its deployment, you may first want to create a PBS file (written in bash), for example considered a file `job.pbs` defined as follows:
+
+.. code:: bash
+
+	#!/bin/bash
+	#PBS -q gpuq
+	#PBS -l ncpus=10 -l ngpus=1 -l mem=32gb  -l walltime=01:00:00
+	#PBS -S /bin/bash
+
+	# we move to the directory where the PBS file has been called thanks to the special variable PBS_O_WORKDIR
+	cd $PBS_O_WORKDIR/
+	
+	# we load a conda env
+	. /appli/anaconda/latest/etc/profile.d/conda.sh 
+	conda activate ENV_NAME
+	
+	# we launch our script, redirecting the output to a file to get feedbacks from its execution
+	echo "starting script execution..." &>> log.txt
+	python3 /home/datawork-osmose/essai_save_image.py &>> log.txt
 
 
+You can now simply run this code by entering the following line in the terminal:
+
+.. code:: bash
+
+	qsub job.pbs
+
+Your code is now running. To monitor its execution, consider reading the log file (`log.txt` in the example). To learn about its general state, consider the following command:
 
 
+.. code:: bash
 
+	qstat -u intranet_username
+
+The results show your current jobs as well as their status (Q means queued, H held, R running, E exiting. Please refer to the qstat manual for more information).
 
 
 
